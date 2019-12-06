@@ -1,25 +1,8 @@
-/* eslint-disable
-    no-ex-assign,
-    no-unused-vars,
-    prefer-rest-params,
-    prefer-spread,
-*/
-// TODO: This file was created by bulk-decaffeinate.
-// Fix any style issues and re-enable lint.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS104: Avoid inline assignments
- * DS204: Change includes calls to have a more natural evaluation order
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 const _ = require('lodash')
 const $ = require('jquery')
 const Promise = require('bluebird')
 
 const $dom = require('../dom')
-const $selection = require('../dom/selection')
 const $utils = require('./utils')
 const $Chai = require('../cy/chai')
 const $Xhrs = require('../cy/xhrs')
@@ -41,8 +24,6 @@ const $Retries = require('../cy/retries')
 const $Stability = require('../cy/stability')
 const $Snapshots = require('../cy/snapshots')
 const $CommandQueue = require('./command_queue')
-
-const crossOriginScriptRe = /^script error/i
 
 const privateProps = {
   props: { name: 'state', url: true },
@@ -87,8 +68,8 @@ const setTopOnError = function (cy) {
 
   curCy = cy
 
-  const onTopError = function () {
-    return curCy.onUncaughtException.apply(curCy, arguments)
+  const onTopError = function (...args) {
+    return curCy.onUncaughtException(...args)
   }
 
   top.onerror = onTopError
@@ -113,8 +94,8 @@ const create = function (specWindow, Cypress, Cookies, state, config, log) {
     return stopped
   }
 
-  const onFinishAssertions = function () {
-    return assertions.finishAssertions.apply(window, arguments)
+  const onFinishAssertions = function (...args) {
+    return assertions.finishAssertions.apply(window, args)
   }
 
   const warnMixingPromisesAndCommands = function () {
@@ -173,11 +154,11 @@ const create = function (specWindow, Cypress, Cookies, state, config, log) {
 
   const contentWindowListeners = function (contentWindow) {
     return $Listeners.bindTo(contentWindow, {
-      onError () {
+      onError (...args) {
         // use a function callback here instead of direct
         // reference so our users can override this function
         // if need be
-        return cy.onUncaughtException.apply(cy, arguments)
+        return cy.onUncaughtException(...args)
       },
       onSubmit (e) {
         return Cypress.action('app:form:submitted', e)
@@ -875,6 +856,8 @@ const create = function (specWindow, Cypress, Cookies, state, config, log) {
           // listeners time to be invoked prior to moving on
           return stability.isStable(true, 'load')
         } catch (err) {
+          let e = err
+
           // we failed setting the remote window props
           // which means we're in a cross domain failure
           // check first to see if you have a callback function
@@ -882,14 +865,14 @@ const create = function (specWindow, Cypress, Cookies, state, config, log) {
           onpl = state('onPageLoadErr')
 
           if (onpl) {
-            err = onpl(err)
+            e = onpl(e)
           }
 
           // and now reject with it
           r = state('reject')
 
           if (r) {
-            return r(err)
+            return r(e)
           }
         }
       })
@@ -928,8 +911,8 @@ const create = function (specWindow, Cypress, Cookies, state, config, log) {
     },
 
     addCommandSync (name, fn) {
-      cy[name] = function () {
-        return fn.apply(runnableCtx(name), arguments)
+      cy[name] = function (...args) {
+        return fn.apply(runnableCtx(name), args)
       }
     },
 
@@ -1127,10 +1110,10 @@ const create = function (specWindow, Cypress, Cookies, state, config, log) {
       return timers.wrap(contentWindow)
     },
 
-    onSpecWindowUncaughtException () {
+    onSpecWindowUncaughtException (...args) {
       // create the special uncaught exception err
       let runnable
-      const err = errors.createUncaughtException('spec', arguments)
+      const err = errors.createUncaughtException('spec', args)
 
       runnable = state('runnable')
 
@@ -1155,7 +1138,7 @@ const create = function (specWindow, Cypress, Cookies, state, config, log) {
       return err
     },
 
-    onUncaughtException () {
+    onUncaughtException (...args) {
       let r
       const runnable = state('runnable')
 
@@ -1165,7 +1148,7 @@ const create = function (specWindow, Cypress, Cookies, state, config, log) {
       }
 
       // create the special uncaught exception err
-      const err = errors.createUncaughtException('app', arguments)
+      const err = errors.createUncaughtException('app', args)
 
       const results = Cypress.action('app:uncaught:exception', err, runnable)
 
@@ -1217,7 +1200,7 @@ const create = function (specWindow, Cypress, Cookies, state, config, log) {
         return runnable.fn = fn
       }
 
-      runnable.fn = function () {
+      runnable.fn = function (...args) {
         restore()
 
         const timeout = config('defaultCommandTimeout')
@@ -1239,9 +1222,9 @@ const create = function (specWindow, Cypress, Cookies, state, config, log) {
           let done
 
           if (fn.length) {
-            const originalDone = arguments[0]
+            const originalDone = args[0]
 
-            arguments[0] = (done = function (err) {
+            args[0] = (done = function (err) {
               // TODO: handle no longer error
               // when ended early
               doneEarly()
@@ -1260,7 +1243,7 @@ const create = function (specWindow, Cypress, Cookies, state, config, log) {
             state('done', done)
           }
 
-          let ret = fn.apply(this, arguments)
+          let ret = fn.apply(this, args)
 
           // if we returned a value from fn
           // and enqueued some new commands
