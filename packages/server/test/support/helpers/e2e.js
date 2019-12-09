@@ -1,3 +1,5 @@
+let e2e
+
 require('../../spec_helper')
 
 const _ = require('lodash')
@@ -58,22 +60,22 @@ const replaceDurationSeconds = function (str, p1, p2, p3, p4) {
   return p1 + _.padEnd('X seconds', lengthOfExistingDuration)
 }
 
+// duration='1589'
 const replaceDurationFromReporter = (str, p1, p2, p3) => {
-  // duration='1589'
   return p1 + _.padEnd('X', p2.length, 'X') + p3
 }
 
 const replaceNodeVersion = (str, p1, p2, p3) => _.padEnd(`${p1}X (/foo/bar/node)`, (p1.length + p2.length + p3.length))
 
+// when swapping out the duration, ensure we pad the
+// full length of the duration so it doesn't shift content
 const replaceDurationInTables = (str, p1, p2) => {
-  // when swapping out the duration, ensure we pad the
-  // full length of the duration so it doesn't shift content
   return _.padStart('XX:XX', p1.length + p2.length)
 }
 
-const replaceParenTime = (str, p1) => {
 // could be (1 second) or (10 seconds)
 // need to account for shortest and longest
+const replaceParenTime = (str, p1) => {
   return _.padStart('(X second)', p1.length)
 }
 
@@ -309,7 +311,7 @@ localItFn.skip = function (title, options) {
   return localItFn(title, options)
 }
 
-const e2e = module.exports = {
+module.exports = (e2e = {
   normalizeStdout,
 
   it: localItFn,
@@ -352,16 +354,16 @@ const e2e = module.exports = {
             .map(npmI, niv.install)
             .then(() => Promise.map(npmI, copyToE2ENodeModules))
           }
+          // symlinks mess up fs.copySync
+          // and bin files aren't necessary for these tests
         }).then(() => {
-        // symlinks mess up fs.copySync
-        // and bin files aren't necessary for these tests
           return fs.removeAsync(Fixtures.path('projects/e2e/node_modules/.bin'))
         })
       })
 
-      after(() => {
       // now cleanup the node modules after because these add a lot
       // of copy time for the Fixtures scaffolding
+      after(() => {
         return fs.removeAsync(Fixtures.path('projects/e2e/node_modules'))
       })
     }
@@ -499,7 +501,7 @@ const e2e = module.exports = {
       args.push(`--reporter-options=${options.reporterOptions}`)
     }
 
-    browser = options.browser
+    browser = (options.browser)
 
     if (browser) {
       args.push(`--browser=${browser}`)
@@ -665,4 +667,4 @@ const e2e = module.exports = {
 `)
     }
   },
-}
+})
