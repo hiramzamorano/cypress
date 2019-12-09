@@ -581,7 +581,9 @@ module.exports = (e2e = {
 
         if (matches) {
           // eslint-disable-next-line no-unused-vars
-          const [str, key, customBrowserPath, browserName, version, headless] = matches
+          let browserName; let customBrowserPath; let headless; let key; let version;
+
+          [str, key, customBrowserPath, browserName, version, headless] = matches
 
           const { browser } = options
 
