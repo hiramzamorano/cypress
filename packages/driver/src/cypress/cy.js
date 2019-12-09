@@ -22,6 +22,7 @@ const $Timers = require('../cy/timers')
 const $Timeouts = require('../cy/timeouts')
 const $Retries = require('../cy/retries')
 const $Stability = require('../cy/stability')
+const $selection = require('../dom/selection')
 const $Snapshots = require('../cy/snapshots')
 const $CommandQueue = require('./command_queue')
 
@@ -226,7 +227,7 @@ const create = function (specWindow, Cypress, Cookies, state, config, log) {
       contentWindow.SVGElement.prototype.blur = function () {
         return focused.interceptBlur(this)
       }
-      
+
       contentWindow.HTMLInputElement.prototype.select = function () {
         return $selection.interceptSelect.call(this)
       }

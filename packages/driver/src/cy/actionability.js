@@ -54,7 +54,7 @@ const ensureElIsNotCovered = function (cy, win, $el, fromElViewport, options, lo
     elAtCoords = $dom.getElementAtPointFromViewport(win.document, fromElViewport.x, fromElViewport.y)
 
     if (elAtCoords) {
-      $elAtCoords = $dom.wrap(elAtCoords)
+      return $elAtCoords = $dom.wrap(elAtCoords)
     }
   }
 

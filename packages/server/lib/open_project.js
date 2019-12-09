@@ -85,8 +85,6 @@ const moduleFactory = () => {
 
           const automation = openProject.getAutomation()
 
-          const automation = openProject.getAutomation()
-
           // use automation middleware if its
           // been defined here
           let am = options.automationMiddleware
