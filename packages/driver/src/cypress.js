@@ -1,3 +1,19 @@
+/* eslint-disable
+    default-case,
+    no-unused-vars,
+    prefer-rest-params,
+    prefer-spread,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
 const _ = require('lodash')
 const $ = require('jquery')
 const blobUtil = require('blob-util')
@@ -33,12 +49,12 @@ const proxies = {
   cy: 'detachDom getStyles'.split(' '),
 }
 
-const jqueryProxyFn = function (...args) {
+const jqueryProxyFn = function () {
   if (!this.cy) {
     $utils.throwErrByPath('miscellaneous.no_cy')
   }
 
-  return this.cy.$$.apply(this.cy, args)
+  return this.cy.$$.apply(this.cy, arguments)
 }
 
 _.extend(jqueryProxyFn, $)
@@ -58,8 +74,6 @@ const throwDeprecatedCommandInterface = function (key, method) {
         return `'${key}', { prevSubject: true }, function(){...}`
       case 'addDualCommand':
         return `'${key}', { prevSubject: 'optional' }, function(){...}`
-      default:
-        break
     }
   })()
 
@@ -112,10 +126,10 @@ class $Cypress {
     // to their corresponding objects
     _.each(proxies, (methods, key) => {
       return _.each(methods, (method) => {
-        return $Cypress.prototype[method] = function (...args) {
+        return $Cypress.prototype[method] = function () {
           const prop = this[key]
 
-          return prop && prop[method](...args)
+          return prop && prop[method].apply(prop, arguments)
         }
       })
     })
@@ -192,7 +206,7 @@ class $Cypress {
       longStackTraces: config.isInteractive,
     })
 
-    const { env } = config
+    const { env, remote } = config
 
     config = _.omit(config, 'env', 'remote', 'resolved', 'scaffoldedFiles', 'javascripts', 'state')
 
@@ -228,7 +242,7 @@ class $Cypress {
   // at this point
   onSpecWindow (specWindow) {
     const logFn = (...args) => {
-      return this.log(...args)
+      return this.log.apply(this, args)
     }
 
     // create cy and expose globally
@@ -507,8 +521,6 @@ class $Cypress {
 
       case 'spec:script:error':
         return this.emit('script:error', ...args)
-      default:
-        break
     }
   }
 
