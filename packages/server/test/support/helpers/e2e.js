@@ -22,6 +22,9 @@ const screenshots = require(`${root}../lib/screenshots`)
 const videoCapture = require(`${root}../lib/video_capture`)
 const settings = require(`${root}../lib/util/settings`)
 
+// mutates mocha test runner - needed for `test.titlePath`
+require(`${root}../lib/project`)
+
 cp = Promise.promisifyAll(cp)
 
 const env = _.clone(process.env)
